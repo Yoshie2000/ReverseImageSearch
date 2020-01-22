@@ -1,0 +1,33 @@
+<div class="jumbotron" style="margin-top: 25px;">
+    <h1>URL Input</h1>
+
+    <form action="/url/" method="post">
+
+        <div class="form-group">
+            <label for="urlInput">URL to crawl</label>
+            <input type="text" class="form-control" id="urlInput" placeholder="Enter URL" name="url">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+
+    </form>
+</div>
+
+<table class="table table-bordered">
+    <thead class="thead-dark">
+    <tr>
+        <th scope="col">URL</th>
+        <th scope="col">Content Hash</th>
+        <th scope="col">Images</th>
+    </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($this->urls as $url): ?>
+        <tr>
+            <td><?= $url->getUrl() ?></td>
+            <td><?= $url->getContentHash() ?></td>
+            <td><?= $url->getImageCount() ?></td>
+        </tr>
+    <?php endforeach ?>
+    </tbody>
+</table>
