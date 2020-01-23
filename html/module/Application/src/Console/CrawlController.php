@@ -2,10 +2,8 @@
 
 namespace Application\Console;
 
-use Application\Service\CrawlImageStrategy;
-use Application\Service\CrawlLinkStrategy;
-use Application\Service\RabbitMQServiceInterface;
-use Application\Service\URLServiceInterface;
+use Application\Service\CrawlService;
+use Application\Service\RabbitMQService;
 use PhpAmqpLib\Message\AMQPMessage;
 use Zend\Console\Request as ConsoleRequest;
 use Zend\Mvc\Console\Controller\AbstractConsoleController;
@@ -14,35 +12,25 @@ use Zend\View\Exception\RuntimeException;
 class CrawlController extends AbstractConsoleController
 {
 
-    /** @var CrawlLinkStrategy */
-    private $linkStrategy;
-    /** @var CrawlImageStrategy */
-    private $imageStrategy;
-
-    /** @var URLServiceInterface */
-    private $urlService;
-    /** @var RabbitMQServiceInterface */
+    /** @var CrawlService */
+    private $crawlService;
+    /** @var RabbitMQService */
     private $rabbitmqService;
 
     /**
      * CrawlController constructor.
-     * @param CrawlLinkStrategy $linkStrategy
-     * @param CrawlImageStrategy $imageStrategy
-     * @param URLServiceInterface $urlService
-     * @param RabbitMQServiceInterface $rabbitmqService
+     * @param CrawlService $crawlService
+     * @param RabbitMQService $rabbitmqService
      */
-    public function __construct(
-        CrawlLinkStrategy $linkStrategy,
-        CrawlImageStrategy $imageStrategy,
-        URLServiceInterface $urlService,
-        RabbitMQServiceInterface $rabbitmqService
-    ) {
-        $this->linkStrategy = $linkStrategy;
-        $this->imageStrategy = $imageStrategy;
-        $this->urlService = $urlService;
+    public function __construct(CrawlService $crawlService, RabbitMQService $rabbitmqService)
+    {
+        $this->crawlService = $crawlService;
         $this->rabbitmqService = $rabbitmqService;
     }
 
+    /**
+     * Used to crawl a specific URL
+     */
     public function crawlurlAction()
     {
         $request = $this->getRequest();
@@ -55,13 +43,15 @@ class CrawlController extends AbstractConsoleController
 
         $mode = $request->getParam("mode");
         $url = $request->getParam("url");
-        $this->executeCrawl($url, $mode);
+        $this->crawlService->executeCrawl($url, $mode);
     }
 
+    /**
+     * Used to take a URL from RabbitMQ and crawl it
+     */
     public function crawlAction()
     {
         $request = $this->getRequest();
-        $rabbitmqService = $this->rabbitmqService;
 
         if (!$request instanceof ConsoleRequest) {
             throw new RuntimeException(
@@ -70,38 +60,11 @@ class CrawlController extends AbstractConsoleController
         }
 
         $mode = $request->getParam("mode");
-        $rabbitmqService->getURL(function (AMQPMessage $data) use ($mode) {
+        $this->rabbitmqService->getURL(function (AMQPMessage $data) use ($mode) {
             $url = $data->body;
-            $this->executeCrawl($url, $mode);
+            $this->crawlService->executeCrawl($url, $mode);
+            return $this->rabbitmqService->getChannel()->basic_ack($data->getDeliveryTag());
         });
-    }
-
-    public function executeCrawl($url, $mode)
-    {
-        echo "execute crawl", PHP_EOL;
-        $urlService = $this->urlService;
-        $rabbitmqService = $this->rabbitmqService;
-
-        switch ($mode) {
-            case "links":
-                $links = $this->linkStrategy->crawl($url);
-                foreach ($links as $link) {
-                    $urlService->saveURL($link);
-                    $rabbitmqService->sendURL($link);
-                    echo $link . PHP_EOL;
-                }
-                echo PHP_EOL;
-                break;
-            case "images":
-                $images = $this->imageStrategy->crawl($url);
-                foreach ($images as $image) {
-                    echo $image . PHP_EOL;
-                }
-                echo PHP_EOL;
-                break;
-            default:
-                break;
-        }
     }
 
 }

@@ -7,12 +7,28 @@ namespace Application\Model;
 interface URLModelInterface
 {
 
-    public function getId();
+    /**
+     * Returns the ID/primary key of the crawled website
+     * @return int
+     */
+    public function getId(): int;
 
-    public function getUrl();
+    /**
+     * Returns the URL of the crawled website
+     * @return string
+     */
+    public function getUrl(): string;
 
-    public function getContentHash();
+    /**
+     * Returns the md5 hash of the content of the crawled website
+     * @return string
+     */
+    public function getContentHash(): string;
 
-    public function getImageCount();
+    /**
+     * Returns how many images were on the crawled website
+     * @return int
+     */
+    public function getImageCount(): int;
 
 }

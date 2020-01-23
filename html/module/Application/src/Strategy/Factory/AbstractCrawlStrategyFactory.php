@@ -1,12 +1,11 @@
 <?php
 
+namespace Application\Strategy\Factory;
 
-namespace Application\Service\Factory;
-
-
-use Application\Service\CrawlImageStrategy;
-use Application\Service\CrawlLinkStrategy;
-use Application\Service\URLServiceInterface;
+use Application\Service\HTMLServiceInterface;
+use Application\Strategy\CrawlImageStrategy;
+use Application\Strategy\CrawlLinkStrategy;
+use DOMDocument;
 use Interop\Container\ContainerInterface;
 use Interop\Container\Exception\ContainerException;
 use Zend\ServiceManager\Exception\ServiceNotCreatedException;
@@ -23,7 +22,7 @@ class AbstractCrawlStrategyFactory implements AbstractFactoryInterface
      * @param string $requestedName
      * @return bool
      */
-    public function canCreate(ContainerInterface $container, $requestedName)
+    public function canCreate(ContainerInterface $container, $requestedName): bool
     {
         return $requestedName === CrawlImageStrategy::class || $requestedName === CrawlLinkStrategy::class;
     }
@@ -42,6 +41,9 @@ class AbstractCrawlStrategyFactory implements AbstractFactoryInterface
      */
     public function __invoke(ContainerInterface $container, $requestedName, array $options = null)
     {
-        return new $requestedName(new \DOMDocument(), $container->get(URLServiceInterface::class));
+        return new $requestedName(
+            new DOMDocument(),
+            $container->get(HTMLServiceInterface::class)
+        );
     }
 }

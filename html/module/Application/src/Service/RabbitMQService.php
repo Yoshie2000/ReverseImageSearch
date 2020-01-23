@@ -1,9 +1,9 @@
 <?php
 
-
 namespace Application\Service;
 
-
+use ErrorException;
+use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -12,33 +12,44 @@ class RabbitMQService implements RabbitMQServiceInterface
 
     /** @var AMQPStreamConnection */
     private $connection;
+    /** @var AMQPChannel */
+    private $channel;
 
     /**
      * RabbitMQService constructor.
      * @param AMQPStreamConnection $connection
+     * @param AMQPChannel $channel
      */
-    public function __construct(AMQPStreamConnection $connection)
+    public function __construct(AMQPStreamConnection $connection, AMQPChannel $channel)
     {
         $this->connection = $connection;
+        $this->channel = $channel;
     }
 
-    public function sendURL($url)
+    /** ${@inheritDoc} */
+    public function sendURL(string $url)
     {
-        $channel = $this->connection->channel();
+        $channel = $this->channel;
 
-        $channel->queue_declare("urlQueue", false, false, false, false);
         $channel->basic_publish(new AMQPMessage($url), "", "urlQueue");
-
-        $channel->close();
-        $this->connection->close();
     }
 
+    /** ${@inheritDoc} */
     public function getURL($callback)
     {
-        $channel = $this->connection->channel();
+        $channel = $this->channel;
 
-        $channel->queue_declare("urlQueue", false, false, false, false);
-        $channel->basic_consume("urlQueue", "", false, true, true, false, $callback);
-        $channel->wait();
+        $channel->basic_consume("urlQueue", "", false, false, true, false, $callback);
+        try {
+            $channel->wait();
+        } catch (ErrorException $e) {
+            echo $e->getMessage() . PHP_EOL;
+        }
     }
+
+    public function getChannel(): AMQPChannel
+    {
+        return $this->channel;
+    }
+
 }

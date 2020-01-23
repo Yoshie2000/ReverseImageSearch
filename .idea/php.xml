@@ -54,5 +54,5 @@
       <path value="$PROJECT_DIR$/html/vendor/phpseclib/phpseclib" />
     </include_path>
   </component>
-  <component name="PhpProjectSharedConfiguration" php_language_level="7" />
+  <component name="PhpProjectSharedConfiguration" php_language_level="7.1" />
 </project>

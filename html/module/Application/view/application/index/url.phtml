@@ -1,7 +1,7 @@
 <div class="jumbotron" style="margin-top: 25px;">
     <h1>Thank you!</h1>
 
-    <p>Your URL <a href="<?php echo $url; ?>"><?php echo $url; ?></a> has been submitted</p>
+    <p>Your URL <a href="<?= $url; ?>"><?= $url; ?></a> <?= $this->urlInputMessageHelper($messageCode, $url); ?></p>
 
     <form action="/">
         <button type="submit" class="btn btn-primary">Go back</button>

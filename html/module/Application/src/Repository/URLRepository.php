@@ -1,32 +1,37 @@
 <?php
 
-
-namespace Application\Service;
-
+namespace Application\Repository;
 
 use Application\Model\URLModel;
+use Application\Service\HTMLServiceInterface;
 use Zend\Db\Adapter\AdapterInterface;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Db\Adapter\Driver\StatementInterface;
 use Zend\Db\ResultSet\ResultSet;
 
-class URLService implements URLServiceInterface
+class URLRepository implements URLRepositoryInterface
 {
 
     /** @var AdapterInterface */
     private $adapter;
+    /** @var HTMLServiceInterface */
+    private $htmlService;
 
     /**
-     * URLService constructor.
+     * URLRepository constructor.
      * @param AdapterInterface $adapter
+     * @param HTMLServiceInterface $htmlService
      */
-    public function __construct(AdapterInterface $adapter)
-    {
+    public function __construct(
+        AdapterInterface $adapter,
+        HTMLServiceInterface $htmlService
+    ) {
         $this->adapter = $adapter;
+        $this->htmlService = $htmlService;
     }
 
     /** ${@inheritDoc} */
-    public function getAllURLs()
+    public function getAllURLs(): array
     {
         $allUrls = [];
 
@@ -59,31 +64,8 @@ class URLService implements URLServiceInterface
         return $allUrls;
     }
 
-    public function saveURL($url)
-    {
-        // URL exists and hashes are the same => nothing changed, no need to crawl again
-        $urlData = $this->getURLInfo($url);
-        $contentHash = $this->getURLHash($url);
-        if ($urlData !== null && $urlData->getContentHash() === $contentHash) {
-            return;
-        }
-
-        /** @var AdapterInterface $adapter */
-        $adapter = $this->adapter;
-
-        $sql = "INSERT INTO URLS (ID, URL, ContentHash, ImageCount) VALUES(null, :url, :contentHash, 0);";
-
-        /** @var StatementInterface $statement */
-        $statement = $adapter->createStatement($sql);
-
-        /** @var ResultInterface $result */
-        $statement->execute([
-            ":url"         => $url,
-            ":contentHash" => $contentHash
-        ]);
-    }
-
-    public function getURLInfo($url)
+    /** ${@inheritDoc} */
+    public function getURLInfo(string $url): URLModel
     {
         $urlModel = null;
 
@@ -116,13 +98,59 @@ class URLService implements URLServiceInterface
         return $urlModel;
     }
 
-    public function getHTML($url)
+    /** ${@inheritDoc} */
+    public function saveURL(string $url): int
     {
-        return utf8_encode(file_get_contents($url));
+        $urlData = $this->getURLInfo($url);
+        $contentHash = $this->htmlService->getHash($url);
+
+        // URL exists and hashes are the same => nothing changed, no need to crawl again
+        if ($urlData !== null && $urlData->getContentHash() === $contentHash) {
+            return URLRepositoryInterface::URL_NOT_CHANGED;
+        }
+
+        // URL exists and hashes are not the same => simply update the hash stored in the database
+        if ($urlData !== null) {
+            $this->updateURLHash($url);
+            return URLRepositoryInterface::URL_CHANGED;
+        }
+
+        // URL doesnt exist yet
+
+        /** @var AdapterInterface $adapter */
+        $adapter = $this->adapter;
+
+        $sql = "INSERT INTO URLS (ID, URL, ContentHash, ImageCount) VALUES(null, :url, :contentHash, 0);";
+
+        /** @var StatementInterface $statement */
+        $statement = $adapter->createStatement($sql);
+
+        /** @var ResultInterface $result */
+        $statement->execute([
+            ":url"         => $url,
+            ":contentHash" => $contentHash
+        ]);
+
+        return URLRepositoryInterface::URL_CREATED;
     }
 
-    public function getURLHash($url)
+    public function updateURLHash(string $url): void
     {
-        return hash("md5", $this->getHTML($url));
+        $urlHash = $this->htmlService->getHash($url);
+
+        /** @var AdapterInterface $adapter */
+        $adapter = $this->adapter;
+
+        $sql = "UPDATE URLS SET ContentHash = :contentHash WHERE URL = :url";
+
+        /** @var StatementInterface $statement */
+        $statement = $adapter->createStatement($sql);
+
+        /** @var ResultInterface $result */
+        $statement->execute([
+            ":url"         => $url,
+            ":contentHash" => $urlHash
+        ]);
+
     }
 }

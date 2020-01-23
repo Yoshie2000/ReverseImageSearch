@@ -1,24 +1,27 @@
 <?php
-/**
- * @link      http://github.com/zendframework/ZendSkeletonApplication for the canonical source repository
- * @copyright Copyright (c) 2005-2016 Zend Technologies USA Inc. (http://www.zend.com)
- * @license   http://framework.zend.com/license/new-bsd New BSD License
- */
 
 namespace Application;
 
+use Application\Console\CrawlController;
 use Application\Console\Factory\CrawlControllerFactory;
 use Application\Controller\Factory\IndexControllerFactory;
-use Application\Controller\Factory\TestControllerFactory;
-use Application\Service\Factory\AbstractCrawlStrategyFactory;
+use Application\Controller\IndexController;
+use Application\Factory\ConfigFactory;
+use Application\Repository\Factory\URLRepositoryFactory;
+use Application\Repository\URLRepository;
+use Application\Repository\URLRepositoryInterface;
+use Application\Service\CrawlService;
+use Application\Service\CrawlServiceInterface;
+use Application\Service\Factory\CrawlServiceFactory;
 use Application\Service\Factory\RabbitMQServiceFactory;
-use Application\Service\Factory\URLServiceFactory;
+use Application\Service\HTMLService;
+use Application\Service\HTMLServiceInterface;
 use Application\Service\RabbitMQService;
 use Application\Service\RabbitMQServiceInterface;
-use Application\Service\URLService;
-use Application\Service\URLServiceInterface;
+use Application\Strategy\Factory\AbstractCrawlStrategyFactory;
+use Application\ViewHelper\URLInputMessageHelper;
 use Zend\Router\Http\Literal;
-use Zend\Router\Http\Segment;
+use Zend\ServiceManager\Factory\InvokableFactory;
 
 return [
     'console'         => require 'console.config.php',
@@ -29,7 +32,7 @@ return [
                 'options' => [
                     'route'    => '/',
                     'defaults' => [
-                        'controller' => Controller\IndexController::class,
+                        'controller' => IndexController::class,
                         'action'     => 'index',
                     ],
                 ],
@@ -39,18 +42,8 @@ return [
                 'options' => [
                     'route'    => '/url/',
                     'defaults' => [
-                        'controller' => Controller\IndexController::class,
+                        'controller' => IndexController::class,
                         'action'     => 'url',
-                    ],
-                ],
-            ],
-            'test' => [
-                'type'    => Segment::class,
-                'options' => [
-                    'route'    => '/test[/:param]',
-                    'defaults' => [
-                        'controller' => Controller\TestController::class,
-                        'action'     => 'test',
                     ],
                 ],
             ],
@@ -58,9 +51,8 @@ return [
     ],
     'controllers'     => [
         'factories' => [
-            Controller\IndexController::class => IndexControllerFactory::class,
-            Controller\TestController::class  => TestControllerFactory::class,
-            Console\CrawlController::class    => CrawlControllerFactory::class,
+            IndexController::class => IndexControllerFactory::class,
+            CrawlController::class => CrawlControllerFactory::class,
         ]
     ],
     'view_manager'    => [
@@ -84,15 +76,46 @@ return [
     ],
     'service_manager' => [
         'aliases'            => [
-            URLServiceInterface::class      => URLService::class,
-            RabbitMQServiceInterface::class => RabbitMQService::class
+            RabbitMQServiceInterface::class => RabbitMQService::class,
+            CrawlServiceInterface::class    => CrawlService::class,
+            URLRepositoryInterface::class   => URLRepository::class,
+            HTMLServiceInterface::class     => HTMLService::class,
         ],
         'factories'          => [
-            URLService::class      => URLServiceFactory::class,
-            RabbitMQService::class => RabbitMQServiceFactory::class,
+            RabbitMQService::class            => RabbitMQServiceFactory::class,
+            ApplicationConfigInterface::class => ConfigFactory::class,
+            CrawlService::class               => CrawlServiceFactory::class,
+            URLRepository::class              => URLRepositoryFactory::class,
+            HTMLService::class                => InvokableFactory::class
         ],
         'abstract_factories' => [
             AbstractCrawlStrategyFactory::class,
         ]
+    ],
+    'view_helpers'    => [
+        'factories' => [
+            URLInputMessageHelper::class => InvokableFactory::class
+        ],
+        'aliases'   => [
+            'urlInputMessageHelper' => URLInputMessageHelper::class,
+        ],
+    ],
+    'Application'     => [
+        'rabbit_mq' => [
+            'connection' => [
+                'host'     => 'localhost',
+                'port'     => 5672,
+                'user'     => 'patrick.leonhardt',
+                'password' => 'Check24.de',
+            ],
+            'queues'     => [
+                'urlQueue' => [
+                    'passive'     => false,
+                    'durable'     => false,
+                    'exclusive'   => false,
+                    'auto_delete' => false,
+                ],
+            ],
+        ],
     ],
 ];

@@ -29,7 +29,7 @@
     "zendframework/zend-console": "^2.8",
     "ext-libxml": "*",
     "ext-dom": "*",
-    "ext-http": "*"
+    "zendframework/zend-config": "^3.3"
   },
   "autoload": {
     "psr-4": {

@@ -20,25 +20,25 @@ class URLModel implements URLModelInterface
     protected $imageCount;
 
     /** ${@inheritDoc} */
-    public function getId()
+    public function getId(): int
     {
         return $this->id;
     }
 
     /** ${@inheritDoc} */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
 
     /** ${@inheritDoc} */
-    public function getContentHash()
+    public function getContentHash(): string
     {
         return $this->contentHash;
     }
 
     /** ${@inheritDoc} */
-    public function getImageCount()
+    public function getImageCount(): int
     {
         return $this->imageCount;
     }

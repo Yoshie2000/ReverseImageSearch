@@ -1,4 +1,7 @@
 <?php
+
+use Application\Console\CrawlController;
+
 return [
     'router' => [
         'routes' => [
@@ -6,7 +9,7 @@ return [
                 'options' => [
                     'route'    => 'crawlurl (images|links):mode <url>',
                     'defaults' => [
-                        'controller' => \Application\Console\CrawlController::class,
+                        'controller' => CrawlController::class,
                         'action'     => 'crawlurl',
                     ],
                 ],
@@ -15,7 +18,7 @@ return [
                 'options' => [
                     'route'    => 'crawl (images|links):mode',
                     'defaults' => [
-                        'controller' => \Application\Console\CrawlController::class,
+                        'controller' => CrawlController::class,
                         'action'     => 'crawl',
                     ],
                 ],
