@@ -2,6 +2,7 @@
 
 namespace Application\Controller;
 
+use Application\Repository\ImageRepositoryInterface;
 use Application\Repository\URLRepositoryInterface;
 use Application\Service\RabbitMQServiceInterface;
 use InvalidArgumentException;
@@ -14,17 +15,24 @@ class IndexController extends AbstractActionController
 
     /** @var URLRepositoryInterface */
     private $urlRepository;
+    /** @var ImageRepositoryInterface */
+    private $imageRepository;
     /** @var RabbitMQServiceInterface */
     private $rabbitmqService;
 
     /**
      * IndexController constructor.
      * @param URLRepositoryInterface $urlRepository
+     * @param ImageRepositoryInterface $imageRepository
      * @param RabbitMQServiceInterface $rabbitmqService
      */
-    public function __construct(URLRepositoryInterface $urlRepository, RabbitMQServiceInterface $rabbitmqService)
-    {
+    public function __construct(
+        URLRepositoryInterface $urlRepository,
+        ImageRepositoryInterface $imageRepository,
+        RabbitMQServiceInterface $rabbitmqService
+    ) {
         $this->urlRepository = $urlRepository;
+        $this->imageRepository = $imageRepository;
         $this->rabbitmqService = $rabbitmqService;
     }
 
@@ -35,7 +43,8 @@ class IndexController extends AbstractActionController
     public function indexAction(): ViewModel
     {
         return new ViewModel([
-            "urls" => $this->urlRepository->getAllURLs()
+            "urls" => $this->urlRepository->getAllURLs(),
+            "images" => $this->imageRepository->getAllImages()
         ]);
     }
 

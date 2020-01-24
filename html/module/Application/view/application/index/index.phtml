@@ -13,24 +13,43 @@
     </form>
 </div>
 
-<div style="overflow-x: auto;">
-    <table class="table table-bordered">
-        <thead class="thead-dark">
-        <tr>
-            <th scope="col">URL</th>
-            <th scope="col">Content Hash</th>
-            <th scope="col">Images</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($this->urls as $url): ?>
+<div class="row">
+    <div class="col-lg-6" style="max-height: 40vh; overflow: auto;">
+        <table class="table table-bordered table-sm">
+            <thead class="thead-dark">
             <tr>
-                <td style="word-break: break-all;"><?= $url->getUrl() ?></td>
-                <td><?= $url->getContentHash() ?></td>
-                <td><?= $url->getImageCount() ?></td>
+                <th scope="col">URL</th>
+                <th scope="col">Content Hash</th>
+                <th scope="col">Images</th>
             </tr>
-        <?php endforeach ?>
-        </tbody>
-    </table>
-
+            </thead>
+            <tbody>
+            <?php foreach ($this->urls as $url): ?>
+                <tr>
+                    <td style="word-break: break-all;"><?= $url->getUrl() ?></td>
+                    <td style="word-break: break-all;"><?= $url->getContentHash() ?></td>
+                    <td style="word-break: break-all;"><?= $url->getImageCount() ?></td>
+                </tr>
+            <?php endforeach ?>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-lg-6" style="max-height: 40vh; overflow: auto;">
+        <table class="table table-bordered table-sm">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">URL</th>
+                <th scope="col">Image Hash</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($this->images as $image): ?>
+                <tr>
+                    <td style="word-break: break-all;"><?= $image->getURLID() ?></td>
+                    <td style="word-break: break-all;"><?= $image->getHash() ?></td>
+                </tr>
+            <?php endforeach ?>
+            </tbody>
+        </table>
+    </div>
 </div>

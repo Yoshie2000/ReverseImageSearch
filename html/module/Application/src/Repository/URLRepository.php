@@ -72,7 +72,7 @@ class URLRepository implements URLRepositoryInterface
         /** @var AdapterInterface $adapter */
         $adapter = $this->adapter;
 
-        $sql = "SELECT * FROM URLS WHERE URL = ':url';";
+        $sql = "SELECT * FROM URLS WHERE URL = '" . $url . "' LIMIT 100;";
 
         /** @var StatementInterface $statement */
         $statement = $adapter->createStatement($sql);

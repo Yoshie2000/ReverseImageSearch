@@ -2,6 +2,7 @@
 
 namespace Application\Service\Factory;
 
+use Application\Repository\ImageRepositoryInterface;
 use Application\Repository\URLRepositoryInterface;
 use Application\Service\CrawlService;
 use Application\Service\HashServiceInterface;
@@ -22,6 +23,7 @@ class CrawlServiceFactory
             $container->get(CrawlImageStrategy::class),
             $container->get(CrawlLinkStrategy::class),
             $container->get(URLRepositoryInterface::class),
+            $container->get(ImageRepositoryInterface::class),
             $container->get(RabbitMQServiceInterface::class),
             $container->get(HashServiceInterface::class)
         );

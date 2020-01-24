@@ -2,6 +2,9 @@
 
 namespace Application\Service;
 
+use Application\Model\URLModel;
+use Application\Model\URLModelInterface;
+use Application\Repository\ImageRepositoryInterface;
 use Application\Repository\URLRepositoryInterface;
 use Application\Strategy\CrawlImageStrategy;
 use Application\Strategy\CrawlLinkStrategy;
@@ -15,6 +18,9 @@ class CrawlService implements CrawlServiceInterface
 
     /** @var URLRepositoryInterface */
     private $urlRepository;
+    /** @var ImageRepositoryInterface */
+    private $imageRepository;
+
     /** @var RabbitMQServiceInterface */
     private $rabbitmqService;
     /** @var HashServiceInterface */
@@ -25,6 +31,7 @@ class CrawlService implements CrawlServiceInterface
      * @param CrawlImageStrategy $imageStrategy
      * @param CrawlLinkStrategy $linkStrategy
      * @param URLRepositoryInterface $urlRepository
+     * @param ImageRepositoryInterface $imageRepository
      * @param RabbitMQServiceInterface $rabbitmqService
      * @param HashServiceInterface $hashService
      */
@@ -32,12 +39,14 @@ class CrawlService implements CrawlServiceInterface
         CrawlImageStrategy $imageStrategy,
         CrawlLinkStrategy $linkStrategy,
         URLRepositoryInterface $urlRepository,
+        ImageRepositoryInterface $imageRepository,
         RabbitMQServiceInterface $rabbitmqService,
         HashServiceInterface $hashService
     ) {
         $this->imageStrategy = $imageStrategy;
         $this->linkStrategy = $linkStrategy;
         $this->urlRepository = $urlRepository;
+        $this->imageRepository = $imageRepository;
         $this->rabbitmqService = $rabbitmqService;
         $this->hashService = $hashService;
     }
@@ -62,13 +71,21 @@ class CrawlService implements CrawlServiceInterface
     /** ${@inheritDoc} */
     public function executeImageUrlCrawl(string $url)
     {
+        /** @var URLModel $urlModel */
+        $urlModel = $this->urlRepository->getURLInfo($url);
+
+        if (is_null($urlModel)) {
+            return;
+        }
+
         $images = $this->imageStrategy->crawl($url);
         foreach ($images as $image) {
             $hash = $this->hashService->hashImage($image);
             if ($hash !== "") {
+                $this->imageRepository->saveImage($urlModel->getId(), $hash);
                 $this->rabbitmqService->sendURL($hash, "img");
             }
-            echo $hash . PHP_EOL;
+            echo $image . "    " . $hash . PHP_EOL;
         }
         echo PHP_EOL;
     }

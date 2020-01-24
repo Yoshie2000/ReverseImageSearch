@@ -52,7 +52,7 @@ abstract class AbstractCrawlStrategy
         $parsedUrl = parse_url($url);
 
         if (!$this->startsWith($link, "http://") && !$this->startsWith($link, "https://")) {
-            return $parsedUrl["scheme"] . "://www." . $parsedUrl["host"] . "/" . $link;
+            return $parsedUrl["scheme"] . "://" . $parsedUrl["host"] . "/" . $link;
         }
         return $link;
     }

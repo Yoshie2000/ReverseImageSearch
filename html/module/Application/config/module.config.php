@@ -7,7 +7,10 @@ use Application\Console\Factory\CrawlControllerFactory;
 use Application\Controller\Factory\IndexControllerFactory;
 use Application\Controller\IndexController;
 use Application\Factory\ConfigFactory;
+use Application\Repository\Factory\ImageRepositoryFactory;
 use Application\Repository\Factory\URLRepositoryFactory;
+use Application\Repository\ImageRepository;
+use Application\Repository\ImageRepositoryInterface;
 use Application\Repository\URLRepository;
 use Application\Repository\URLRepositoryInterface;
 use Application\Service\CrawlService;
@@ -83,6 +86,7 @@ return [
             RabbitMQServiceInterface::class => RabbitMQService::class,
             CrawlServiceInterface::class    => CrawlService::class,
             URLRepositoryInterface::class   => URLRepository::class,
+            ImageRepositoryInterface::class => ImageRepository::class,
             HTMLServiceInterface::class     => HTMLService::class,
             HashServiceInterface::class     => HashService::class,
         ],
@@ -92,7 +96,8 @@ return [
             CrawlService::class               => CrawlServiceFactory::class,
             URLRepository::class              => URLRepositoryFactory::class,
             HTMLService::class                => HTMLServiceFactory::class,
-            HashService::class                => HashServiceFactory::class
+            HashService::class                => HashServiceFactory::class,
+            ImageRepository::class            => ImageRepositoryFactory::class
         ],
         'abstract_factories' => [
             AbstractCrawlStrategyFactory::class,

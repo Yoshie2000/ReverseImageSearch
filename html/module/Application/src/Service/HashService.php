@@ -6,7 +6,6 @@ namespace Application\Service;
 
 use Exception;
 use Jenssegers\ImageHash\ImageHash;
-use Jenssegers\ImageHash\Implementations\DifferenceHash;
 
 class HashService implements HashServiceInterface
 {
@@ -30,6 +29,8 @@ class HashService implements HashServiceInterface
             $hash = $this->hasher->hash($imageUrl);
             return $hash->toHex();
         } catch (Exception $e) {
+            echo $e->getMessage() . PHP_EOL;
+            echo $e->getTraceAsString() . PHP_EOL;
             return "";
         }
     }
