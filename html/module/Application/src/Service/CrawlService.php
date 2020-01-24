@@ -17,6 +17,8 @@ class CrawlService implements CrawlServiceInterface
     private $urlRepository;
     /** @var RabbitMQServiceInterface */
     private $rabbitmqService;
+    /** @var HashServiceInterface */
+    private $hashService;
 
     /**
      * CrawlService constructor.
@@ -24,30 +26,33 @@ class CrawlService implements CrawlServiceInterface
      * @param CrawlLinkStrategy $linkStrategy
      * @param URLRepositoryInterface $urlRepository
      * @param RabbitMQServiceInterface $rabbitmqService
+     * @param HashServiceInterface $hashService
      */
     public function __construct(
         CrawlImageStrategy $imageStrategy,
         CrawlLinkStrategy $linkStrategy,
         URLRepositoryInterface $urlRepository,
-        RabbitMQServiceInterface $rabbitmqService
+        RabbitMQServiceInterface $rabbitmqService,
+        HashServiceInterface $hashService
     ) {
         $this->imageStrategy = $imageStrategy;
         $this->linkStrategy = $linkStrategy;
         $this->urlRepository = $urlRepository;
         $this->rabbitmqService = $rabbitmqService;
+        $this->hashService = $hashService;
     }
 
     /** ${@inheritDoc} */
     public function executeCrawl(string $url, string $mode)
     {
-        echo "Execute crawl", PHP_EOL;
+        echo "Execute crawl: " . $url . " (" . $mode . ")" . PHP_EOL;
 
         switch ($mode) {
-            case "links":
+            case "url":
                 $this->executeLinkCrawl($url);
                 break;
-            case "images":
-                $this->executeImageCrawl($url);
+            case "imgUrl":
+                $this->executeImageUrlCrawl($url);
                 break;
             default:
                 break;
@@ -55,11 +60,15 @@ class CrawlService implements CrawlServiceInterface
     }
 
     /** ${@inheritDoc} */
-    public function executeImageCrawl(string $url)
+    public function executeImageUrlCrawl(string $url)
     {
         $images = $this->imageStrategy->crawl($url);
         foreach ($images as $image) {
-            echo $image . PHP_EOL;
+            $hash = $this->hashService->hashImage($image);
+            if ($hash !== "") {
+                $this->rabbitmqService->sendURL($hash, "img");
+            }
+            echo $hash . PHP_EOL;
         }
         echo PHP_EOL;
     }
@@ -69,8 +78,12 @@ class CrawlService implements CrawlServiceInterface
     {
         $links = $this->linkStrategy->crawl($url);
         foreach ($links as $link) {
-            $this->urlRepository->saveURL($link);
-            $this->rabbitmqService->sendURL($link);
+            // Saves the URL in the database and in the urlQueue and in the imgUrlQueue
+            $messageCode = $this->urlRepository->saveURL($link);
+            if ($messageCode !== URLRepositoryInterface::URL_NOT_CHANGED) {
+                $this->rabbitmqService->sendURL($link, "url");
+                $this->rabbitmqService->sendURL($link, "imgUrl");
+            }
             echo $link . PHP_EOL;
         }
         echo PHP_EOL;

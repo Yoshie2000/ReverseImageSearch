@@ -27,24 +27,24 @@ class RabbitMQService implements RabbitMQServiceInterface
     }
 
     /** ${@inheritDoc} */
-    public function sendURL(string $url)
+    public function sendURL(string $url, string $queueName)
     {
+        $url = trim($url);
         $channel = $this->channel;
 
-        $channel->basic_publish(new AMQPMessage($url), "", "urlQueue");
+        $channel->basic_publish(new AMQPMessage($url), "", $queueName . "Queue");
     }
 
     /** ${@inheritDoc} */
-    public function getURL($callback)
+    public function getURL(string $queueName)
     {
         $channel = $this->channel;
 
-        $channel->basic_consume("urlQueue", "", false, false, true, false, $callback);
-        try {
-            $channel->wait();
-        } catch (ErrorException $e) {
-            echo $e->getMessage() . PHP_EOL;
+        $data = $channel->basic_get($queueName . "Queue", true, null);
+        while (is_null($data)) {
+            $data = $channel->basic_get($queueName . "Queue", true, null);
         }
+        return $data->body;
     }
 
     public function getChannel(): AMQPChannel

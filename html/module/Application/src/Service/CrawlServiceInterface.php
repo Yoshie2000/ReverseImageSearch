@@ -18,7 +18,7 @@ interface CrawlServiceInterface
      * @param $url string
      * @return mixed
      */
-    public function executeImageCrawl(string $url);
+    public function executeImageUrlCrawl(string $url);
 
     /**
      * Executes a link crawl on the given URL

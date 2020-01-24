@@ -12,7 +12,7 @@ class CrawlImageStrategy extends AbstractCrawlStrategy implements CrawlStrategyI
      */
     public function crawl(string $url): array
     {
-        return $this->correctLinks($url, $this->find($url, "img", "src"));
+        return $this->find($url, "img", "src", true);
     }
 
 }

@@ -7,6 +7,11 @@ namespace Application\Model;
 class URLModel implements URLModelInterface
 {
 
+    public function __toString()
+    {
+        return "[" . $this->id . "|" . $this->url . "|" . $this->contentHash . "|" . $this->imageCount . "]";
+    }
+
     /** @var int */
     protected $id;
 

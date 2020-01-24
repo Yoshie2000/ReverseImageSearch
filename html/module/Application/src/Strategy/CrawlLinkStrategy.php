@@ -12,7 +12,7 @@ class CrawlLinkStrategy extends AbstractCrawlStrategy implements CrawlStrategyIn
      */
     public function crawl(string $url): array
     {
-        return $this->correctLinks($url, $this->find($url, "a", "href"));
+        return $this->find($url, "a", "href", true);
     }
 
 }

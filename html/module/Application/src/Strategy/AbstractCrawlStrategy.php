@@ -15,6 +15,21 @@ abstract class AbstractCrawlStrategy
     /** @var HTMLServiceInterface */
     private $htmlService;
 
+    function startsWith($string, $startString)
+    {
+        $len = strlen($startString);
+        return (substr($string, 0, $len) === $startString);
+    }
+
+    function endsWith($string, $endString)
+    {
+        $len = strlen($endString);
+        if ($len == 0) {
+            return true;
+        }
+        return (substr($string, -$len) === $endString);
+    }
+
     /**
      * AbstractCrawlStrategy constructor.
      * @param DOMDocument $document
@@ -27,19 +42,19 @@ abstract class AbstractCrawlStrategy
     }
 
     /**
-     * Corrects all the links in the given array (e. g. /about.html will become $url/about.html
-     * @param $url string
-     * @param $links array
-     * @return array
+     * Corrects a given link
+     * @param string $url
+     * @param string $link
+     * @return string
      */
-    public function correctLinks(string $url, array $links): array
+    public function correctLink(string $url, string $link): string
     {
-        foreach ($links as &$link) {
-            if (!(substr(strtolower($link), 0, 7) === "http://" || substr(strtolower($link), 0, 8) === "https://")) {
-                $link = $url . "/" . $link;
-            }
+        $parsedUrl = parse_url($url);
+
+        if (!$this->startsWith($link, "http://") && !$this->startsWith($link, "https://")) {
+            return $parsedUrl["scheme"] . "://www." . $parsedUrl["host"] . "/" . $link;
         }
-        return $links;
+        return $link;
     }
 
     /**
@@ -47,9 +62,10 @@ abstract class AbstractCrawlStrategy
      * @param $url string
      * @param $tagName string
      * @param $tagAttribute string
+     * @param bool $correctLinks
      * @return array
      */
-    public function find(string $url, string $tagName, string $tagAttribute): array
+    public function find(string $url, string $tagName, string $tagAttribute, bool $correctLinks): array
     {
         $result = [];
         $document = $this->document;
@@ -59,9 +75,18 @@ abstract class AbstractCrawlStrategy
         $document->loadHTML($this->htmlService->getHTML($url));
 
         $tags = $document->getElementsByTagName($tagName);
-        /** @var DOMElement $link */
+        /** @var DOMElement $tag */
         foreach ($tags as $tag) {
-            $result[] = $tag->getAttribute($tagAttribute);
+            $attribute = $tag->getAttribute($tagAttribute);
+            if ($attribute === "") {
+                $attribute = $tag->getAttribute("data-" . $tagAttribute);
+            }
+            if ($correctLinks) {
+                $correctedLink = $this->correctLink($url, $attribute);
+                $result[] = $correctedLink;
+            } else {
+                $result[] = $attribute;
+            }
         }
 
         return $result;

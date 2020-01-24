@@ -1,0 +1,13 @@
+[Unit]
+Description=Reverse Image Search Webcrawler
+StartLimitIntervalSec=0
+
+[Service]
+# Type=simple
+ExecStart=/usr/bin/php /var/www/html/public/index.php crawl url
+User=vagrant
+Restart=always
+RestartSec=1
+
+[Install]
+WandetBy=multi-user.target

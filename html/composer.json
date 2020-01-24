@@ -29,7 +29,9 @@
     "zendframework/zend-console": "^2.8",
     "ext-libxml": "*",
     "ext-dom": "*",
-    "zendframework/zend-config": "^3.3"
+    "zendframework/zend-config": "^3.3",
+    "guzzlehttp/guzzle": "^6.5",
+    "jenssegers/imagehash": "^0.6.0"
   },
   "autoload": {
     "psr-4": {

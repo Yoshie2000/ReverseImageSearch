@@ -38,9 +38,9 @@ class URLRepository implements URLRepositoryInterface
         /** @var AdapterInterface $adapter */
         $adapter = $this->adapter;
 
+        $sql = "SELECT * FROM URLS ORDER BY ID DESC;";
         //$sql = "CREATE TABLE URLS (ID INT NOT NULL AUTO_INCREMENT, URL VARCHAR(500) NOT NULL, ContentHash VARCHAR(32) NOT NULL, ImageCount INT NOT NULL, PRIMARY KEY(ID));";
         //$sql = "DROP TABLE URLS;";
-        $sql = "SELECT * FROM URLS ORDER BY ID DESC;";
 
         /** @var StatementInterface $statement */
         $statement = $adapter->createStatement($sql);
@@ -65,14 +65,14 @@ class URLRepository implements URLRepositoryInterface
     }
 
     /** ${@inheritDoc} */
-    public function getURLInfo(string $url): URLModel
+    public function getURLInfo(string $url)
     {
         $urlModel = null;
 
         /** @var AdapterInterface $adapter */
         $adapter = $this->adapter;
 
-        $sql = "SELECT * FROM URLS WHERE URL = :url;";
+        $sql = "SELECT * FROM URLS WHERE URL = ':url';";
 
         /** @var StatementInterface $statement */
         $statement = $adapter->createStatement($sql);
@@ -101,6 +101,8 @@ class URLRepository implements URLRepositoryInterface
     /** ${@inheritDoc} */
     public function saveURL(string $url): int
     {
+        $url = trim($url);
+
         $urlData = $this->getURLInfo($url);
         $contentHash = $this->htmlService->getHash($url);
 

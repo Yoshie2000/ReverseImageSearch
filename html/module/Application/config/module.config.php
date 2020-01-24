@@ -13,7 +13,11 @@ use Application\Repository\URLRepositoryInterface;
 use Application\Service\CrawlService;
 use Application\Service\CrawlServiceInterface;
 use Application\Service\Factory\CrawlServiceFactory;
+use Application\Service\Factory\HashServiceFactory;
+use Application\Service\Factory\HTMLServiceFactory;
 use Application\Service\Factory\RabbitMQServiceFactory;
+use Application\Service\HashService;
+use Application\Service\HashServiceInterface;
 use Application\Service\HTMLService;
 use Application\Service\HTMLServiceInterface;
 use Application\Service\RabbitMQService;
@@ -80,13 +84,15 @@ return [
             CrawlServiceInterface::class    => CrawlService::class,
             URLRepositoryInterface::class   => URLRepository::class,
             HTMLServiceInterface::class     => HTMLService::class,
+            HashServiceInterface::class     => HashService::class,
         ],
         'factories'          => [
             RabbitMQService::class            => RabbitMQServiceFactory::class,
             ApplicationConfigInterface::class => ConfigFactory::class,
             CrawlService::class               => CrawlServiceFactory::class,
             URLRepository::class              => URLRepositoryFactory::class,
-            HTMLService::class                => InvokableFactory::class
+            HTMLService::class                => HTMLServiceFactory::class,
+            HashService::class                => HashServiceFactory::class
         ],
         'abstract_factories' => [
             AbstractCrawlStrategyFactory::class,
@@ -109,7 +115,19 @@ return [
                 'password' => 'Check24.de',
             ],
             'queues'     => [
-                'urlQueue' => [
+                'urlQueue'    => [
+                    'passive'     => false,
+                    'durable'     => false,
+                    'exclusive'   => false,
+                    'auto_delete' => false,
+                ],
+                'imgUrlQueue' => [
+                    'passive'     => false,
+                    'durable'     => false,
+                    'exclusive'   => false,
+                    'auto_delete' => false,
+                ],
+                'imgQueue'    => [
                     'passive'     => false,
                     'durable'     => false,
                     'exclusive'   => false,

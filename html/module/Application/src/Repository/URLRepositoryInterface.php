@@ -25,7 +25,7 @@ interface URLRepositoryInterface
      * @param $url string
      * @return mixed
      */
-    public function getURLInfo(string $url): URLModel;
+    public function getURLInfo(string $url);
 
     /**
      * Saves a given URL in the database

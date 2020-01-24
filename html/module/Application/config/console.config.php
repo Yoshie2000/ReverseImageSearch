@@ -2,27 +2,21 @@
 
 use Application\Console\CrawlController;
 
+// crawl url:   Takes a URL from urlQueue, finds all links and saves them in urlQueue and imgUrlQueue
+// craw imgUrl: Takes a URL from imgUrlQueue, finds all images, hashes them and saves them in imgQueue
+
 return [
     'router' => [
         'routes' => [
-            'crawlurl' => [
-                'options' => [
-                    'route'    => 'crawlurl (images|links):mode <url>',
-                    'defaults' => [
-                        'controller' => CrawlController::class,
-                        'action'     => 'crawlurl',
-                    ],
-                ],
-            ],
             'crawl'    => [
                 'options' => [
-                    'route'    => 'crawl (images|links):mode',
+                    'route'    => 'crawl (imgUrl|url):mode',
                     'defaults' => [
                         'controller' => CrawlController::class,
                         'action'     => 'crawl',
                     ],
                 ],
-            ],
+            ]
         ],
     ],
 ];

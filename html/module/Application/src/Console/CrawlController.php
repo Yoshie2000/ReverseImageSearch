@@ -4,7 +4,6 @@ namespace Application\Console;
 
 use Application\Service\CrawlService;
 use Application\Service\RabbitMQService;
-use PhpAmqpLib\Message\AMQPMessage;
 use Zend\Console\Request as ConsoleRequest;
 use Zend\Mvc\Console\Controller\AbstractConsoleController;
 use Zend\View\Exception\RuntimeException;
@@ -29,24 +28,6 @@ class CrawlController extends AbstractConsoleController
     }
 
     /**
-     * Used to crawl a specific URL
-     */
-    public function crawlurlAction()
-    {
-        $request = $this->getRequest();
-
-        if (!$request instanceof ConsoleRequest) {
-            throw new RuntimeException(
-                'You can only use this action from a console!'
-            );
-        }
-
-        $mode = $request->getParam("mode");
-        $url = $request->getParam("url");
-        $this->crawlService->executeCrawl($url, $mode);
-    }
-
-    /**
      * Used to take a URL from RabbitMQ and crawl it
      */
     public function crawlAction()
@@ -59,12 +40,10 @@ class CrawlController extends AbstractConsoleController
             );
         }
 
+        // Take a URL from the specified queue and crawl it
         $mode = $request->getParam("mode");
-        $this->rabbitmqService->getURL(function (AMQPMessage $data) use ($mode) {
-            $url = $data->body;
-            $this->crawlService->executeCrawl($url, $mode);
-            return $this->rabbitmqService->getChannel()->basic_ack($data->getDeliveryTag());
-        });
+        $url = trim($this->rabbitmqService->getURL($mode));
+        $this->crawlService->executeCrawl($url, $mode);
     }
 
 }

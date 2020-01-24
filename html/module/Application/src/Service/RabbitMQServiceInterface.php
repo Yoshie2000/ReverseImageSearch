@@ -6,17 +6,18 @@ interface RabbitMQServiceInterface
 {
 
     /**
-     * Sends a given URL to RabbitMQ
+     * Sends a given URL to a given queue
      * @param $url string
+     * @param string $queueName
      * @return mixed
      */
-    public function sendURL(string $url);
+    public function sendURL(string $url, string $queueName);
 
     /**
-     * Waits for a URL from RabbitMQ. The callback function will be called automatically.
-     * @param $callback
+     * Waits for a URL from the given queue. The callback function will be called automatically.
+     * @param $queueName
      * @return mixed
      */
-    public function getURL($callback);
+    public function getURL(string $queueName);
 
 }

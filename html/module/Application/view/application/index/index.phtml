@@ -13,21 +13,24 @@
     </form>
 </div>
 
-<table class="table table-bordered">
-    <thead class="thead-dark">
-    <tr>
-        <th scope="col">URL</th>
-        <th scope="col">Content Hash</th>
-        <th scope="col">Images</th>
-    </tr>
-    </thead>
-    <tbody>
-    <?php foreach ($this->urls as $url): ?>
+<div style="overflow-x: auto;">
+    <table class="table table-bordered">
+        <thead class="thead-dark">
         <tr>
-            <td><?= $url->getUrl() ?></td>
-            <td><?= $url->getContentHash() ?></td>
-            <td><?= $url->getImageCount() ?></td>
+            <th scope="col">URL</th>
+            <th scope="col">Content Hash</th>
+            <th scope="col">Images</th>
         </tr>
-    <?php endforeach ?>
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+        <?php foreach ($this->urls as $url): ?>
+            <tr>
+                <td style="word-break: break-all;"><?= $url->getUrl() ?></td>
+                <td><?= $url->getContentHash() ?></td>
+                <td><?= $url->getImageCount() ?></td>
+            </tr>
+        <?php endforeach ?>
+        </tbody>
+    </table>
+
+</div>
