@@ -49,6 +49,32 @@ class IndexController extends AbstractActionController
     }
 
     /**
+     * The search page of the website
+     * @return ViewModel
+     */
+    public function searchAction(): ViewModel
+    {
+        return new ViewModel();
+    }
+
+    /**
+     * The search result page of the website
+     * @return ViewModel
+     */
+    public function resultsAction(): ViewModel
+    {
+        /** @var Request $request */
+        $request = $this->request;
+        $image = $request->getPost("image");
+
+        if (isset($image) && !empty($image) && move_uploaded_file($image, "searchedImages/")) {
+            // Search for the image
+        } else {
+            $this->redirect()->toRoute("search");
+        }
+    }
+
+    /**
      * The "Thank you!" page of the website after you submit a URL
      * @return ViewModel
      */
