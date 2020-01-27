@@ -20,6 +20,12 @@ interface ImageModelInterface
     public function getURLID():int;
 
     /**
+     * @return string
+     * Returns the URL of the image
+     */
+    public function getURL():string;
+
+    /**
      * Returns the hash of the image
      * @return string
      */

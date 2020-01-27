@@ -3,6 +3,7 @@
 namespace Application\Strategy\Factory;
 
 use Application\Service\HTMLServiceInterface;
+use Application\Service\URLParseServiceInterface;
 use Application\Strategy\CrawlImageStrategy;
 use Application\Strategy\CrawlLinkStrategy;
 use DOMDocument;
@@ -43,7 +44,8 @@ class AbstractCrawlStrategyFactory implements AbstractFactoryInterface
     {
         return new $requestedName(
             new DOMDocument(),
-            $container->get(HTMLServiceInterface::class)
+            $container->get(HTMLServiceInterface::class),
+            $container->get(URLParseServiceInterface::class)
         );
     }
 }

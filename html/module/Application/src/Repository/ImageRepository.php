@@ -26,12 +26,12 @@ class ImageRepository implements ImageRepositoryInterface
     }
 
     /** ${@inheritDoc} */
-    public function saveImage(int $urlID, string $imageHash)
+    public function saveImage(int $urlID, string $imageURL, string $imageHash)
     {
         /** @var AdapterInterface $adapter */
         $adapter = $this->adapter;
 
-        $sql = "INSERT INTO Images (ID, URLID, ImageHash) VALUES(null, :urlID, :imageHash);";
+        $sql = "INSERT INTO Images (ID, URLID, ImageURL, ImageHash) VALUES(null, :urlID, :imageURL, :imageHash);";
 
         /** @var StatementInterface $statement */
         $statement = $adapter->createStatement($sql);
@@ -39,6 +39,7 @@ class ImageRepository implements ImageRepositoryInterface
         /** @var ResultInterface $result */
         $statement->execute([
             ":urlID"     => $urlID,
+            ":imageURL"  => $imageURL,
             ":imageHash" => $imageHash
         ]);
     }
@@ -68,6 +69,7 @@ class ImageRepository implements ImageRepositoryInterface
                 $imageModel = new ImageModel();
                 $imageModel->setId($row["ID"]);
                 $imageModel->setUrlID($row["URLID"]);
+                $imageModel->setUrl($row["ImageURL"]);
                 $imageModel->setHash($row["ImageHash"]);
                 break;
             }
@@ -85,7 +87,7 @@ class ImageRepository implements ImageRepositoryInterface
         $adapter = $this->adapter;
 
         $sql = "SELECT * FROM Images ORDER BY ID DESC LIMIT 100;";
-        //$sql = "CREATE TABLE Images (ID INT NOT NULL AUTO_INCREMENT, URLID INT NOT NULL, ImageHash VARCHAR(32) NOT NULL, PRIMARY KEY(ID));";
+        //$sql = "CREATE TABLE Images (ID INT NOT NULL AUTO_INCREMENT, URLID INT NOT NULL, ImageURL VARCHAR(500), ImageHash VARCHAR(32) NOT NULL, PRIMARY KEY(ID));";
         //$sql = "DROP TABLE Images;";
 
         /** @var StatementInterface $statement */
@@ -101,6 +103,7 @@ class ImageRepository implements ImageRepositoryInterface
                 $imageModel = new ImageModel();
                 $imageModel->setId($row["ID"]);
                 $imageModel->setUrlID($row["URLID"]);
+                $imageModel->setUrl($row["ImageURL"]);
                 $imageModel->setHash($row["ImageHash"]);
                 $allImages[] = $imageModel;
             }

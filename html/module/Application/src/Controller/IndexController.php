@@ -66,6 +66,7 @@ class IndexController extends AbstractActionController
 
         if ($messageCode !== URLRepositoryInterface::URL_NOT_CHANGED) {
             $this->rabbitmqService->sendURL($url, "url");
+            $this->rabbitmqService->sendURL($url, "imgUrl");
         }
 
         return new ViewModel([

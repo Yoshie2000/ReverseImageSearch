@@ -12,6 +12,8 @@ class ImageModel implements ImageModelInterface
     /** @var int */
     private $urlID;
     /** @var string */
+    private $url;
+    /** @var string */
     private $hash;
 
     /** ${@inheritDoc} */
@@ -24,6 +26,15 @@ class ImageModel implements ImageModelInterface
     public function getURLID(): int
     {
         return $this->urlID;
+    }
+
+    /**
+     * @return string
+     * Returns the URL of the image
+     */
+    public function getURL(): string
+    {
+        return $this->url;
     }
 
     /** ${@inheritDoc} */
@@ -46,6 +57,14 @@ class ImageModel implements ImageModelInterface
     public function setUrlID(int $urlID): void
     {
         $this->urlID = $urlID;
+    }
+
+    /**
+     * @param string $url
+     */
+    public function setUrl(string $url): void
+    {
+        $this->url = $url;
     }
 
     /**

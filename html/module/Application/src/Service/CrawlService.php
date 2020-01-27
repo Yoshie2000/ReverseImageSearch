@@ -82,7 +82,7 @@ class CrawlService implements CrawlServiceInterface
         foreach ($images as $image) {
             $hash = $this->hashService->hashImage($image);
             if ($hash !== "") {
-                $this->imageRepository->saveImage($urlModel->getId(), $hash);
+                $this->imageRepository->saveImage($urlModel->getId(), $image, $hash);
                 $this->rabbitmqService->sendURL($hash, "img");
             }
             echo $image . "    " . $hash . PHP_EOL;

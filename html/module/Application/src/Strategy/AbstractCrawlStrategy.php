@@ -3,6 +3,7 @@
 namespace Application\Strategy;
 
 use Application\Service\HTMLServiceInterface;
+use Application\Service\URLParseServiceInterface;
 use DOMDocument;
 use DOMElement;
 
@@ -14,47 +15,23 @@ abstract class AbstractCrawlStrategy
 
     /** @var HTMLServiceInterface */
     private $htmlService;
-
-    function startsWith($string, $startString)
-    {
-        $len = strlen($startString);
-        return (substr($string, 0, $len) === $startString);
-    }
-
-    function endsWith($string, $endString)
-    {
-        $len = strlen($endString);
-        if ($len == 0) {
-            return true;
-        }
-        return (substr($string, -$len) === $endString);
-    }
+    /** @var URLParseServiceInterface */
+    private $urlParseService;
 
     /**
      * AbstractCrawlStrategy constructor.
      * @param DOMDocument $document
      * @param HTMLServiceInterface $htmlService
+     * @param URLParseServiceInterface $urlParseService
      */
-    public function __construct(DOMDocument $document, HTMLServiceInterface $htmlService)
-    {
+    public function __construct(
+        DOMDocument $document,
+        HTMLServiceInterface $htmlService,
+        URLParseServiceInterface $urlParseService
+    ) {
         $this->document = $document;
         $this->htmlService = $htmlService;
-    }
-
-    /**
-     * Corrects a given link
-     * @param string $url
-     * @param string $link
-     * @return string
-     */
-    public function correctLink(string $url, string $link): string
-    {
-        $parsedUrl = parse_url($url);
-
-        if (!$this->startsWith($link, "http://") && !$this->startsWith($link, "https://")) {
-            return $parsedUrl["scheme"] . "://" . $parsedUrl["host"] . "/" . $link;
-        }
-        return $link;
+        $this->urlParseService = $urlParseService;
     }
 
     /**
@@ -82,7 +59,7 @@ abstract class AbstractCrawlStrategy
                 $attribute = $tag->getAttribute("data-" . $tagAttribute);
             }
             if ($correctLinks) {
-                $correctedLink = $this->correctLink($url, $attribute);
+                $correctedLink = $this->urlParseService->url_to_absolute($url, $attribute);
                 $result[] = $correctedLink;
             } else {
                 $result[] = $attribute;

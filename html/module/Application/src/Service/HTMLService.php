@@ -25,7 +25,10 @@ class HTMLService implements HTMLServiceInterface
     {
         try {
             $client = $this->client;
-            $response = $client->request("GET", $url);
+            $response = $client->request("GET", $url, [
+                "timeout"         => 5,
+                "connect_timeout" => 5,
+            ]);
 
             if ($response->getStatusCode() !== 200) {
                 return "";

@@ -25,6 +25,8 @@ use Application\Service\HTMLService;
 use Application\Service\HTMLServiceInterface;
 use Application\Service\RabbitMQService;
 use Application\Service\RabbitMQServiceInterface;
+use Application\Service\URLParseService;
+use Application\Service\URLParseServiceInterface;
 use Application\Strategy\Factory\AbstractCrawlStrategyFactory;
 use Application\ViewHelper\URLInputMessageHelper;
 use Zend\Router\Http\Literal;
@@ -89,6 +91,7 @@ return [
             ImageRepositoryInterface::class => ImageRepository::class,
             HTMLServiceInterface::class     => HTMLService::class,
             HashServiceInterface::class     => HashService::class,
+            URLParseServiceInterface::class => URLParseService::class,
         ],
         'factories'          => [
             RabbitMQService::class            => RabbitMQServiceFactory::class,
@@ -97,7 +100,8 @@ return [
             URLRepository::class              => URLRepositoryFactory::class,
             HTMLService::class                => HTMLServiceFactory::class,
             HashService::class                => HashServiceFactory::class,
-            ImageRepository::class            => ImageRepositoryFactory::class
+            ImageRepository::class            => ImageRepositoryFactory::class,
+            URLParseService::class            => InvokableFactory::class
         ],
         'abstract_factories' => [
             AbstractCrawlStrategyFactory::class,
