@@ -2,8 +2,6 @@
 
 namespace Application\Repository;
 
-use Application\Model\URLModel;
-
 interface URLRepositoryInterface
 {
 

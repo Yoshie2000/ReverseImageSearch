@@ -42,7 +42,14 @@ class CrawlController extends AbstractConsoleController
 
         // Take a URL from the specified queue and crawl it
         $mode = $request->getParam("mode");
-        $url = trim($this->rabbitmqService->getURL($mode));
+
+        $url = trim($this->rabbitmqService->getURLNoWait($mode . "HighPriority"));
+        if (strlen($url) == 0) {
+            $url = trim($this->rabbitmqService->getURL($mode));
+        } else {
+            $mode .= "HighPriority";
+        }
+
         $this->crawlService->executeCrawl($url, $mode);
     }
 

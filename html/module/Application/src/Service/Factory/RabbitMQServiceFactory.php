@@ -22,7 +22,7 @@ class RabbitMQServiceFactory
         $queueConfig = $config->rabbit_mq->queues->toArray();
 
         $connection = new AMQPStreamConnection($connectionConfig->host, $connectionConfig->port,
-            $connectionConfig->user, $connectionConfig->password);
+            $connectionConfig->user, $connectionConfig->password, '/', false, 'AMQPLAIN', null, 'en_US', 10, 10);
         $channel = $connection->channel();
 
         foreach ($queueConfig as $queueName => $queueValues) {

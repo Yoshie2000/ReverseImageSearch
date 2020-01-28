@@ -8,7 +8,7 @@ use Application\Console\CrawlController;
 return [
     'router' => [
         'routes' => [
-            'crawl'    => [
+            'crawl' => [
                 'options' => [
                     'route'    => 'crawl (imgUrl|url):mode',
                     'defaults' => [

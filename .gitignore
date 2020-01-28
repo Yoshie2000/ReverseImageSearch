@@ -6,3 +6,5 @@ composer.phar
 # composer.lock
 
 html/vendor/*
+html/searchedImages/*
+html/searchedImages

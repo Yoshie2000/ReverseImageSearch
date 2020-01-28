@@ -1,16 +1,20 @@
 <div class="jumbotron" style="margin-top: 25px;">
     <h1>Search</h1>
 
-    <form action="/results/" method="post">
+    <?php
+    $form->prepare();
+    $fileElement = $form->get('image-file');
+    echo $this->form()->openTag($form);
+    ?>
 
-        <div class="form-group input-group">
-            <div class="custom-file">
-                <input type="file" class="custom-file-input" id="fileUpload" accept="image/*" name="image">
-                <label class="custom-file-label" for="fileUpload">Choose image</label>
-            </div>
-        </div>
+    <div class="form-element">
+        <?= $this->formLabel($fileElement) ?>
+        <?= $this->formFile($fileElement) ?>
+        <?= $this->formElementErrors($fileElement) ?>
+    </div>
 
-        <button type="submit" class="btn btn-primary">Search</button>
+    <button type="submit" class="btn btn-primary">Search</button>
 
-    </form>
+    <?= $this->form()->closeTag() ?>
+
 </div>

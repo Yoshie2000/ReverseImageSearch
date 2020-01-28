@@ -16,9 +16,12 @@ use Application\Repository\URLRepositoryInterface;
 use Application\Service\CrawlService;
 use Application\Service\CrawlServiceInterface;
 use Application\Service\Factory\CrawlServiceFactory;
+use Application\Service\Factory\HammingDistanceServiceFactory;
 use Application\Service\Factory\HashServiceFactory;
 use Application\Service\Factory\HTMLServiceFactory;
 use Application\Service\Factory\RabbitMQServiceFactory;
+use Application\Service\HammingDistanceService;
+use Application\Service\HammingDistanceServiceInterface;
 use Application\Service\HashService;
 use Application\Service\HashServiceInterface;
 use Application\Service\HTMLService;
@@ -36,7 +39,7 @@ return [
     'console'         => require 'console.config.php',
     'router'          => [
         'routes' => [
-            'home' => [
+            'home'    => [
                 'type'    => Literal::class,
                 'options' => [
                     'route'    => '/',
@@ -46,7 +49,7 @@ return [
                     ],
                 ],
             ],
-            'url'  => [
+            'url'     => [
                 'type'    => Literal::class,
                 'options' => [
                     'route'    => '/url/',
@@ -66,7 +69,7 @@ return [
                     ],
                 ],
             ],
-            'results'  => [
+            'results' => [
                 'type'    => Literal::class,
                 'options' => [
                     'route'    => '/results/',
@@ -91,12 +94,13 @@ return [
         'not_found_template'       => 'error/404',
         'exception_template'       => 'error/index',
         'template_map'             => [
-            'layout/layout'           => __DIR__ . '/../view/layout/layout.phtml',
-            'application/index/index' => __DIR__ . '/../view/application/index/index.phtml',
-            'application/index/search' => __DIR__ . '/../view/application/index/search.phtml',
-            'application/index/url'   => __DIR__ . '/../view/application/index/url.phtml',
-            'error/404'               => __DIR__ . '/../view/error/404.phtml',
-            'error/index'             => __DIR__ . '/../view/error/index.phtml',
+            'layout/layout'             => __DIR__ . '/../view/layout/layout.phtml',
+            'application/index/index'   => __DIR__ . '/../view/application/index/index.phtml',
+            'application/index/search'  => __DIR__ . '/../view/application/index/search.phtml',
+            'application/index/results' => __DIR__ . '/../view/application/index/results.phtml',
+            'application/index/url'     => __DIR__ . '/../view/application/index/url.phtml',
+            'error/404'                 => __DIR__ . '/../view/error/404.phtml',
+            'error/index'               => __DIR__ . '/../view/error/index.phtml',
         ],
         'template_path_stack'      => [
             __DIR__ . '/../view',
@@ -104,13 +108,14 @@ return [
     ],
     'service_manager' => [
         'aliases'            => [
-            RabbitMQServiceInterface::class => RabbitMQService::class,
-            CrawlServiceInterface::class    => CrawlService::class,
-            URLRepositoryInterface::class   => URLRepository::class,
-            ImageRepositoryInterface::class => ImageRepository::class,
-            HTMLServiceInterface::class     => HTMLService::class,
-            HashServiceInterface::class     => HashService::class,
-            URLParseServiceInterface::class => URLParseService::class,
+            RabbitMQServiceInterface::class        => RabbitMQService::class,
+            CrawlServiceInterface::class           => CrawlService::class,
+            URLRepositoryInterface::class          => URLRepository::class,
+            ImageRepositoryInterface::class        => ImageRepository::class,
+            HTMLServiceInterface::class            => HTMLService::class,
+            HashServiceInterface::class            => HashService::class,
+            URLParseServiceInterface::class        => URLParseService::class,
+            HammingDistanceServiceInterface::class => HammingDistanceService::class,
         ],
         'factories'          => [
             RabbitMQService::class            => RabbitMQServiceFactory::class,
@@ -120,7 +125,8 @@ return [
             HTMLService::class                => HTMLServiceFactory::class,
             HashService::class                => HashServiceFactory::class,
             ImageRepository::class            => ImageRepositoryFactory::class,
-            URLParseService::class            => InvokableFactory::class
+            URLParseService::class            => InvokableFactory::class,
+            HammingDistanceService::class     => HammingDistanceServiceFactory::class,
         ],
         'abstract_factories' => [
             AbstractCrawlStrategyFactory::class,
@@ -143,19 +149,31 @@ return [
                 'password' => 'Check24.de',
             ],
             'queues'     => [
-                'urlQueue'    => [
+                'urlQueue'                => [
                     'passive'     => false,
                     'durable'     => false,
                     'exclusive'   => false,
                     'auto_delete' => false,
                 ],
-                'imgUrlQueue' => [
+                'urlHighPriorityQueue'    => [
                     'passive'     => false,
                     'durable'     => false,
                     'exclusive'   => false,
                     'auto_delete' => false,
                 ],
-                'imgQueue'    => [
+                'imgUrlQueue'             => [
+                    'passive'     => false,
+                    'durable'     => false,
+                    'exclusive'   => false,
+                    'auto_delete' => false,
+                ],
+                'imgUrlHighPriorityQueue' => [
+                    'passive'     => false,
+                    'durable'     => false,
+                    'exclusive'   => false,
+                    'auto_delete' => false,
+                ],
+                'imgQueue'                => [
                     'passive'     => false,
                     'durable'     => false,
                     'exclusive'   => false,

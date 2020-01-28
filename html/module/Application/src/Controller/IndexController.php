@@ -2,6 +2,7 @@
 
 namespace Application\Controller;
 
+use Application\Form\SearchForm;
 use Application\Repository\ImageRepositoryInterface;
 use Application\Repository\URLRepositoryInterface;
 use Application\Service\RabbitMQServiceInterface;
@@ -43,7 +44,7 @@ class IndexController extends AbstractActionController
     public function indexAction(): ViewModel
     {
         return new ViewModel([
-            "urls" => $this->urlRepository->getAllURLs(),
+            "urls"   => $this->urlRepository->getAllURLs(),
             "images" => $this->imageRepository->getAllImages()
         ]);
     }
@@ -54,7 +55,11 @@ class IndexController extends AbstractActionController
      */
     public function searchAction(): ViewModel
     {
-        return new ViewModel();
+        $form = new SearchForm("search-form");
+        $form->setAttribute("action", "/results/");
+        return new ViewModel([
+            "form" => $form
+        ]);
     }
 
     /**
@@ -63,15 +68,48 @@ class IndexController extends AbstractActionController
      */
     public function resultsAction(): ViewModel
     {
-        /** @var Request $request */
-        $request = $this->request;
-        $image = $request->getPost("image");
+        $form = new SearchForm("search-form");
 
-        if (isset($image) && !empty($image) && move_uploaded_file($image, "searchedImages/")) {
-            // Search for the image
-        } else {
-            $this->redirect()->toRoute("search");
+        $request = $this->getRequest();
+
+        if ($request->isPost()) {
+            $post = array_merge_recursive(
+                $request->getPost()->toArray(),
+                $request->getFiles()->toArray()
+            );
+
+            $form->setData($post);
+            if ($form->isValid()) {
+                $data = $form->getData();
+
+                $location = "/var/www/html/searchedImages/";
+
+                $allowedExtensions = ["jpg", "jpeg", "png", "svg"];
+
+                $extension = explode('.', $data['image-file']['name']);
+                $extension = end($extension);
+                $fileName = time() . '.' . $extension;
+
+                $path = $location . $fileName;
+
+                // Check if everything is OK!
+                if (0 === $data['image-file']['error'] && in_array($extension, $allowedExtensions)) {
+                    move_uploaded_file($data['image-file']['tmp_name'], $path);
+
+                    // Search for the image
+                    $similarImages = $this->imageRepository->getImagesInDistance($path, 15);
+
+                    unlink($path);
+
+                    return new ViewModel([
+                        "similarImages" => $similarImages
+                    ]);
+                }
+
+            }
         }
+
+        $this->redirect()->toRoute("search");
     }
 
     /**
@@ -91,8 +129,8 @@ class IndexController extends AbstractActionController
         $messageCode = $this->urlRepository->saveURL($url);
 
         if ($messageCode !== URLRepositoryInterface::URL_NOT_CHANGED) {
-            $this->rabbitmqService->sendURL($url, "url");
-            $this->rabbitmqService->sendURL($url, "imgUrl");
+            $this->rabbitmqService->sendURL("0" . $url, "urlHighPriority");
+            $this->rabbitmqService->sendURL("0" . $url, "imgUrlHighPriority");
         }
 
         return new ViewModel([

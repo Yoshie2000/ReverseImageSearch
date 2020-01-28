@@ -5,6 +5,8 @@ namespace Application\Repository;
 
 
 use Application\Model\ImageModel;
+use Application\Service\HammingDistanceServiceInterface;
+use Application\Service\HashServiceInterface;
 use Zend\Db\Adapter\AdapterInterface;
 use Zend\Db\Adapter\Driver\ResultInterface;
 use Zend\Db\Adapter\Driver\StatementInterface;
@@ -15,19 +17,36 @@ class ImageRepository implements ImageRepositoryInterface
 
     /** @var AdapterInterface */
     private $adapter;
+    /** @var HashServiceInterface */
+    private $hashService;
+    /** @var HammingDistanceServiceInterface */
+    private $hammingDistanceService;
 
     /**
      * ImageRepository constructor.
      * @param AdapterInterface $adapter
+     * @param HashServiceInterface $hashService
+     * @param HammingDistanceServiceInterface $hammingDistanceService
      */
-    public function __construct(AdapterInterface $adapter)
-    {
+    public function __construct(
+        AdapterInterface $adapter,
+        HashServiceInterface $hashService,
+        HammingDistanceServiceInterface $hammingDistanceService
+    ) {
         $this->adapter = $adapter;
+        $this->hashService = $hashService;
+        $this->hammingDistanceService = $hammingDistanceService;
     }
 
     /** ${@inheritDoc} */
     public function saveImage(int $urlID, string $imageURL, string $imageHash)
     {
+
+        $imageModel = $this->getImageModelByURL($imageURL);
+        if ($imageModel !== null) {
+            return ImageRepositoryInterface::IMAGE_EXISTS;
+        }
+
         /** @var AdapterInterface $adapter */
         $adapter = $this->adapter;
 
@@ -42,6 +61,42 @@ class ImageRepository implements ImageRepositoryInterface
             ":imageURL"  => $imageURL,
             ":imageHash" => $imageHash
         ]);
+
+        return ImageRepositoryInterface::IMAGE_DOESNT_EXIST;
+    }
+
+    /** ${@inheritDoc} */
+    public function getImageModelByURL(string $url)
+    {
+        $imageModel = null;
+
+        /** @var AdapterInterface $adapter */
+        $adapter = $this->adapter;
+
+        $sql = "SELECT * FROM Images WHERE ImageURL = :url;";
+
+        /** @var StatementInterface $statement */
+        $statement = $adapter->createStatement($sql);
+        /** @var ResultInterface $result */
+        $result = $statement->execute([
+            ":url" => $url,
+        ]);
+
+        if ($result->isQueryResult()) {
+            $resultSet = new ResultSet;
+            $resultSet->initialize($result);
+
+            foreach ($resultSet as $row) {
+                $imageModel = new ImageModel();
+                $imageModel->setId($row["ID"]);
+                $imageModel->setUrlID($row["URLID"]);
+                $imageModel->setUrl($row["ImageURL"]);
+                $imageModel->setHash($row["ImageHash"]);
+                break;
+            }
+        }
+
+        return $imageModel;
     }
 
     /** ${@inheritDoc} */
@@ -52,7 +107,7 @@ class ImageRepository implements ImageRepositoryInterface
         /** @var AdapterInterface $adapter */
         $adapter = $this->adapter;
 
-        $sql = "SELECT * FROM Images WHERE ImageHash = ':imageHash';";
+        $sql = "SELECT * FROM Images WHERE ImageHash = :imageHash;";
 
         /** @var StatementInterface $statement */
         $statement = $adapter->createStatement($sql);
@@ -79,6 +134,43 @@ class ImageRepository implements ImageRepositoryInterface
     }
 
     /** ${@inheritDoc} */
+    public function getImagesInDistance(string $imagePath, int $distance): array
+    {
+        $imageHash = $this->hashService->hashImageLocal($imagePath);
+
+        $allImages = [];
+
+        /** @var AdapterInterface $adapter */
+        $adapter = $this->adapter;
+
+        $sql = "SELECT * FROM Images WHERE BIT_COUNT(ImageHash ^ :otherImageHash) <= :distance ORDER BY BIT_COUNT(ImageHash ^ :otherImageHash) ASC;";
+
+        /** @var StatementInterface $statement */
+        $statement = $adapter->createStatement($sql);
+        /** @var ResultInterface $result */
+        $result = $statement->execute([
+            ":otherImageHash" => $imageHash,
+            ":distance"       => $distance,
+        ]);
+
+        if ($result->isQueryResult()) {
+            $resultSet = new ResultSet;
+            $resultSet->initialize($result);
+
+            foreach ($resultSet as $row) {
+                $imageModel = new ImageModel();
+                $imageModel->setId($row["ID"]);
+                $imageModel->setUrlID($row["URLID"]);
+                $imageModel->setUrl($row["ImageURL"]);
+                $imageModel->setHash($row["ImageHash"]);
+                $allImages[] = $imageModel;
+            }
+        }
+
+        return $allImages;
+    }
+
+    /** ${@inheritDoc} */
     public function getAllImages(): array
     {
         $allImages = [];
@@ -87,7 +179,7 @@ class ImageRepository implements ImageRepositoryInterface
         $adapter = $this->adapter;
 
         $sql = "SELECT * FROM Images ORDER BY ID DESC LIMIT 100;";
-        //$sql = "CREATE TABLE Images (ID INT NOT NULL AUTO_INCREMENT, URLID INT NOT NULL, ImageURL VARCHAR(500), ImageHash VARCHAR(32) NOT NULL, PRIMARY KEY(ID));";
+        //$sql = "CREATE TABLE Images (ID INT NOT NULL AUTO_INCREMENT, URLID INT NOT NULL, ImageURL VARCHAR(500), ImageHash VARCHAR(500) NOT NULL, PRIMARY KEY(ID));";
         //$sql = "DROP TABLE Images;";
 
         /** @var StatementInterface $statement */

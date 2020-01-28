@@ -46,6 +46,15 @@ class RabbitMQService implements RabbitMQServiceInterface
         return $data->body;
     }
 
+    /** ${@inheritDoc} */
+    public function getURLNoWait(string $queueName)
+    {
+        $channel = $this->channel;
+
+        $data = $channel->basic_get($queueName . "Queue", true, null);
+        return $data == null ? "" : $data->body;
+    }
+
     public function getChannel(): AMQPChannel
     {
         return $this->channel;

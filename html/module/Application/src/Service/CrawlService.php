@@ -3,7 +3,6 @@
 namespace Application\Service;
 
 use Application\Model\URLModel;
-use Application\Model\URLModelInterface;
 use Application\Repository\ImageRepositoryInterface;
 use Application\Repository\URLRepositoryInterface;
 use Application\Strategy\CrawlImageStrategy;
@@ -58,10 +57,16 @@ class CrawlService implements CrawlServiceInterface
 
         switch ($mode) {
             case "url":
-                $this->executeLinkCrawl($url);
+                $this->executeLinkCrawl($url, false);
                 break;
             case "imgUrl":
-                $this->executeImageUrlCrawl($url);
+                $this->executeImageUrlCrawl($url, false);
+                break;
+            case "urlHighPriority":
+                $this->executeLinkCrawl($url, true);
+                break;
+            case "imgUrlHighPriority":
+                $this->executeImageUrlCrawl($url, true);
                 break;
             default:
                 break;
@@ -69,8 +74,13 @@ class CrawlService implements CrawlServiceInterface
     }
 
     /** ${@inheritDoc} */
-    public function executeImageUrlCrawl(string $url)
+    public function executeImageUrlCrawl(string $url, bool $priority)
     {
+        // Remove the number
+        if (is_numeric($url[0])) {
+            $url = substr($url, 1);
+        }
+
         /** @var URLModel $urlModel */
         $urlModel = $this->urlRepository->getURLInfo($url);
 
@@ -82,8 +92,10 @@ class CrawlService implements CrawlServiceInterface
         foreach ($images as $image) {
             $hash = $this->hashService->hashImage($image);
             if ($hash !== "") {
-                $this->imageRepository->saveImage($urlModel->getId(), $image, $hash);
-                $this->rabbitmqService->sendURL($hash, "img");
+                $messageCode = $this->imageRepository->saveImage($urlModel->getId(), $image, $hash);
+                if ($messageCode !== ImageRepositoryInterface::IMAGE_EXISTS) {
+                    $this->rabbitmqService->sendURL($hash, "img");
+                }
             }
             echo $image . "    " . $hash . PHP_EOL;
         }
@@ -91,15 +103,27 @@ class CrawlService implements CrawlServiceInterface
     }
 
     /** ${@inheritDoc} */
-    public function executeLinkCrawl(string $url)
+    public function executeLinkCrawl(string $url, bool $priority)
     {
+        $urlIndex = 0;
+        // Get and remove the number
+        if ($priority) {
+            $urlIndex = intval($url[0]);
+            $url = substr($url, 1);
+        }
+
+        $highPriority = $priority && $urlIndex < 1;
+        $priorityUrl = $highPriority ? "HighPriority" : "";
+
         $links = $this->linkStrategy->crawl($url);
         foreach ($links as $link) {
             // Saves the URL in the database and in the urlQueue and in the imgUrlQueue
             $messageCode = $this->urlRepository->saveURL($link);
             if ($messageCode !== URLRepositoryInterface::URL_NOT_CHANGED) {
-                $this->rabbitmqService->sendURL($link, "url");
-                $this->rabbitmqService->sendURL($link, "imgUrl");
+                $priorityLink = $highPriority ? ($urlIndex + 1) . $url : $url;
+
+                $this->rabbitmqService->sendURL($priorityLink, "url" . $priorityUrl);
+                $this->rabbitmqService->sendURL($priorityLink, "imgUrl" . $priorityUrl);
             }
             echo $link . PHP_EOL;
         }

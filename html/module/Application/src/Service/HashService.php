@@ -31,7 +31,6 @@ class HashService implements HashServiceInterface
         $this->imagick = $imagick;
     }
 
-
     /** ${@inheritDoc} */
     public function hashImage(string $imageUrl): string
     {
@@ -57,10 +56,20 @@ class HashService implements HashServiceInterface
                 unlink($imageUrl);
             }
 
-            return $hash->toHex();
+            return $hash->toInt();
         } catch (Exception $e) {
             echo $e->getMessage() . PHP_EOL;
-            return "";
+            return "0";
         }
+    }
+
+    /**
+     * Returns a hash from the image (that is on the current machine)
+     * @param string $imageUrl
+     * @return string
+     */
+    public function hashImageLocal(string $imageUrl): string
+    {
+        return $this->hasher->hash($imageUrl)->toInt();
     }
 }

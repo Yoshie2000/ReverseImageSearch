@@ -16,15 +16,17 @@ interface CrawlServiceInterface
     /**
      * Executes an image crawl on the given URL
      * @param $url string
+     * @param bool $priority
      * @return mixed
      */
-    public function executeImageUrlCrawl(string $url);
+    public function executeImageUrlCrawl(string $url, bool $priority);
 
     /**
      * Executes a link crawl on the given URL
      * @param $url string
+     * @param bool $priority
      * @return mixed
      */
-    public function executeLinkCrawl(string $url);
+    public function executeLinkCrawl(string $url, bool $priority);
 
 }

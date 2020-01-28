@@ -7,6 +7,11 @@ namespace Application\Model;
 class ImageModel implements ImageModelInterface
 {
 
+    public function __toString()
+    {
+        return $this->url;
+    }
+
     /** @var int */
     private $id;
     /** @var int */
