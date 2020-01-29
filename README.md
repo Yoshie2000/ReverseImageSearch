@@ -39,7 +39,7 @@
 Now you can access [http://reverseimagesearch.test](http://reverseimagesearch.test) in your browser, it will redirect you to the ip of your VM.
 Right now, it will tell you that it can't find the tables, so you need to go to `/var/www/html/module/Application/src/Repository/` and in the `URLRepository.php` and `ImageRepository.php`, uncomment the second of the three lines in the `getAll(Images|URLs)` method that creates the tables. Now reload the page. Comment that line out and reload again. Now everything is ready to go.
 
-## How to setup the crawler services
+## Crawler services
 Just execute the following commands. This will create links from the main service files at `/var/www/html/setup/services/` to the systemd directories. You only need to edit the main service files from now on.
 ```
 sudo ln -s /var/www/html/setup/services/ris-crawler@.service /etc/systemd/system/multi-user.target.wants/ris-crawler@.service
