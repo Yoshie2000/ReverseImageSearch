@@ -37,3 +37,11 @@
 15. Go to [http://reverseimagesearch.test:15672](http://reverseimagesearch.test:15672), go to `Admin`, click on your user (or patrick.leonhardt), and click on `Set permission`
 
 Now you can access [http://reverseimagesearch.test](http://reverseimagesearch.test) in your browser, it will redirect you to the ip of your VM.
+Right now, it will tell you that it can't find the tables, so you need to go to `/var/www/html/module/Application/src/Repository/` and in the `URLRepository.php` and `ImageRepository.php`, uncomment the second of the three lines in the `getAll(Images|URLs)` method that creates the tables. Now reload the page. Comment that line out and reload again. Now everything is ready to go.
+
+## How to setup the crawler services
+// TODO in progress
+
+## Usage
+You can manually put in URLs into the program by going to [http://reverseimagesearch.test](http://reverseimagesearch.test) and typing in your URL into the form. Every URL you put in will be crawled with a high priority, but depending on how much you put in, you might need to wait a little bit as the crawlers will crawl your URL for new URLs and crawl all of those URLs for more URLs, all of that happens with high priority. After that, everything will go back to normal priority.
+To start the crawlers, simple type `sudo sh /var/www/setup/bash/ris-crawler-start.sh`. To stop, type `sudo sh /var/www/setup/bash/ris-crawler-stop.sh`. You can edit those files to run as many crawlers as you want and your computer can handle :)
