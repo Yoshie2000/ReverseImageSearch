@@ -1,8 +1,15 @@
-<div class="jumbotron" style="margin-top: 25px;">
-    <h1>Your results</h1>
+<style>
+    .image-container {
+        margin: 10px;
+        display: inline-block;
+        background-color: #cfcfcf;
+    }
+</style>
 
-    <?php foreach ($this->similarImages as $image): ?>
-        <img src="<?= $image; ?>" alt="" style="max-width: 200px;">
-    <?php endforeach ?>
+<h1>Your results</h1>
 
-</div>
+<?php foreach ($this->similarImages as $image): ?>
+    <div class="image-container">
+        <img src="<?= $image; ?>" alt="" style="height: 75px; min-height: 75px; max-height: 75px;">
+    </div>
+<?php endforeach ?>

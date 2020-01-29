@@ -32,7 +32,8 @@
     "zendframework/zend-config": "^3.3",
     "guzzlehttp/guzzle": "^6.5",
     "jenssegers/imagehash": "^0.6.0",
-    "ext-imagick": "*"
+    "ext-imagick": "*",
+    "ext-exif": "*"
   },
   "autoload": {
     "psr-4": {

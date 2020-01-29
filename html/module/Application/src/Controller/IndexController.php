@@ -97,7 +97,7 @@ class IndexController extends AbstractActionController
                     move_uploaded_file($data['image-file']['tmp_name'], $path);
 
                     // Search for the image
-                    $similarImages = $this->imageRepository->getImagesInDistance($path, 80);
+                    $similarImages = $this->imageRepository->getImagesInDistance($path, 25);
 
                     unlink($path);
 

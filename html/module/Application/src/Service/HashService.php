@@ -29,6 +29,7 @@ class HashService implements HashServiceInterface
         $this->hasher = $hasher;
         $this->htmlService = $htmlService;
         $this->imagick = $imagick;
+        ini_set("precision", 50);
     }
 
     /** ${@inheritDoc} */
@@ -39,14 +40,16 @@ class HashService implements HashServiceInterface
             $isSvg = false;
 
             if (substr($imageUrl, -strlen(".svg")) === ".svg") {
+                $this->imagick = new Imagick();
                 $isSvg = true;
                 $fileName = "svg-" . random_int(0, PHP_INT_MAX) . ".png";
                 $svg = "<?xml version='1.0' encoding='UTF-8' standalone='no'?>" . $this->htmlService->getHTML($imageUrl);
 
-                $this->imagick->readImageBlob($svg, "file.svg");
+                $this->imagick->readImageBlob($svg);
                 $this->imagick->setImageFormat("png24");
                 $this->imagick->writeImage($fileName);
                 $this->imagick->clear();
+                $this->imagick->destroy();
                 $imageUrl = $fileName;
             }
 

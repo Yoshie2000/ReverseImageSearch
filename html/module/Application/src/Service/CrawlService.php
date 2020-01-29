@@ -91,7 +91,7 @@ class CrawlService implements CrawlServiceInterface
         $images = $this->imageStrategy->crawl($url);
         foreach ($images as $image) {
             $hash = $this->hashService->hashImage($image);
-            if ($hash !== "") {
+            if ($hash !== "" && $hash !== "0") {
                 $messageCode = $this->imageRepository->saveImage($urlModel->getId(), $image, $hash);
                 if ($messageCode !== ImageRepositoryInterface::IMAGE_EXISTS) {
                     $this->rabbitmqService->sendURL($hash, "img");
@@ -113,17 +113,17 @@ class CrawlService implements CrawlServiceInterface
         }
 
         $highPriority = $priority && $urlIndex < 1;
-        $priorityUrl = $highPriority ? "HighPriority" : "";
+        $priorityQueue = $highPriority ? "HighPriority" : "";
 
         $links = $this->linkStrategy->crawl($url);
         foreach ($links as $link) {
             // Saves the URL in the database and in the urlQueue and in the imgUrlQueue
             $messageCode = $this->urlRepository->saveURL($link);
             if ($messageCode !== URLRepositoryInterface::URL_NOT_CHANGED) {
-                $priorityLink = $highPriority ? ($urlIndex + 1) . $url : $url;
+                $priorityLink = $highPriority ? ($urlIndex + 1) . $link : $link;
 
-                $this->rabbitmqService->sendURL($priorityLink, "url" . $priorityUrl);
-                $this->rabbitmqService->sendURL($priorityLink, "imgUrl" . $priorityUrl);
+                $this->rabbitmqService->sendURL($priorityLink, "url" . $priorityQueue);
+                $this->rabbitmqService->sendURL($priorityLink, "imgUrl" . $priorityQueue);
             }
             echo $link . PHP_EOL;
         }

@@ -41,9 +41,14 @@ class ImageRepository implements ImageRepositoryInterface
     /** ${@inheritDoc} */
     public function saveImage(int $urlID, string $imageURL, string $imageHash)
     {
+        // Check if its an image
+        $headers = get_headers($imageURL, 1);
+        if (strpos($headers['Content-Type'], 'image/') === false) {
+            return ImageRepositoryInterface::IMAGE_EXISTS;
+        }
 
         $imageModel = $this->getImageModelByURL($imageURL);
-        if ($imageModel !== null) {
+        if ($imageModel !== null ) {
             return ImageRepositoryInterface::IMAGE_EXISTS;
         }
 
@@ -143,7 +148,7 @@ class ImageRepository implements ImageRepositoryInterface
         /** @var AdapterInterface $adapter */
         $adapter = $this->adapter;
 
-        $sql = "SELECT * FROM Images WHERE BIT_COUNT(ImageHash ^ :otherImageHash) <= :distance ORDER BY BIT_COUNT(ImageHash ^ :otherImageHash) ASC;";
+        $sql = "SELECT *, BIT_COUNT(ImageHash ^ :otherImageHash) AS hamming FROM Images HAVING hamming <= :distance ORDER BY hamming ASC LIMIT 50;";
 
         /** @var StatementInterface $statement */
         $statement = $adapter->createStatement($sql);
